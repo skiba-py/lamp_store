@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { ChakraProvider, Box } from '@chakra-ui/react'
+import theme from './theme'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import Catalog from './pages/Catalog'
+import Product from './pages/Product'
+import Cart from './pages/Cart'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <ChakraProvider theme={theme}>
+      <Box bg="#E2E2E2">
+        <Box
+          id="page"
+          maxW="1200px"
+          w="100%"
+          mx="auto"
+          px={4}
+          display="flex"
+          flexDirection="column"
+        >
+          <Router>
+            <Header />
+            <Box flex={1} display="flex" flexDirection="column">
+              <Routes>
+                <Route path="/" element={<Catalog />} />
+                <Route path="/product/:id" element={<Product />} />
+                <Route path="/cart" element={<Cart />} />
+              </Routes>
+            </Box>
+            <Footer />
+          </Router>
+        </Box>
+      </Box>
+    </ChakraProvider>
   )
 }
-
-export default App
