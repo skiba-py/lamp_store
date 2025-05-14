@@ -9,7 +9,7 @@ export default function Catalog() {
   };
 
   return (
-    <Box id="catalog" w="100%" minH="100vh" py={8} px={4}>
+    <Box id="catalog" w="100%" minH="100vh">
       <Heading as="h1" size="lg" mb={6} w="100%" textAlign="left">Список товаров</Heading>
       <ProductList products={products} onAddToCart={handleAddToCart} />
     </Box>

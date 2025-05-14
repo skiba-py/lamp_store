@@ -13,16 +13,13 @@ export default function App() {
       <Box bg="#E2E2E2">
         <Box
           id="page"
-          maxW="1200px"
           w="100%"
-          mx="auto"
-          px={4}
           display="flex"
           flexDirection="column"
         >
           <Router>
             <Header />
-            <Box flex={1} display="flex" flexDirection="column">
+            <Box id="content" maxW="1200px" w="100%" flex={1} display="flex" flexDirection="column" px={4} py={14} mx="auto">
               <Routes>
                 <Route path="/" element={<Catalog />} />
                 <Route path="/product/:id" element={<Product />} />

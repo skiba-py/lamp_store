@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 
 export default function Header() {
   return (
-    <Box as="header" bg="white" px={5} py={3}>
-      <Flex align="center">
+    <Box as="header" bg="white" py={4}>
+      <Flex align="center" maxW="1200px" mx="auto" px={4}>
         <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <Text fontWeight="bold" fontSize="xl">LAMPS</Text>
           <Box ml={2}><FaRegLightbulb /></Box>
