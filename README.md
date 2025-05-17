@@ -1,12 +1,53 @@
-# React + Vite
+# Lamp Store
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Интернет-магазин ламп с современным веб-интерфейсом и REST API.
 
-Currently, two official plugins are available:
+## Структура проекта
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```
+lamp_store/
+├── frontend/           # React приложение
+└── products_service/   # Backend API (в разработке)
+└── orders_service/     # Backend API (в разработке)
+└── admin_service/      # Backend API (в разработке)
+```
 
-## Expanding the ESLint configuration
+## Текущий статус
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- ✅ Frontend: React + Vite + Chakra UI
+- 🚧 Backend: В разработке
+
+## Быстрый старт
+
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/your-username/lamp_store.git
+cd lamp_store
+```
+
+2. Запустите проект с помощью Docker Compose:
+```bash
+docker compose up
+```
+
+Frontend будет доступен по адресу: http://localhost:80
+
+## Разработка
+
+### Frontend
+
+Frontend часть представляет собой SPA приложение, разработанное с использованием:
+- React 18
+- Vite
+- Chakra UI
+- React Router
+
+Подробная документация по frontend находится в [frontend/README.md](frontend/README.md)
+
+### Backend
+
+Backend API находится в разработке. Документация будет добавлена позже.
+
+## Лицензия
+
+MIT
