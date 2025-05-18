@@ -1,0 +1,15 @@
+server:
+  port: 8000
+  host: "0.0.0.0"
+
+database:
+  host: "postgres"
+  port: 5432
+  database: "lamp_store"
+  user: "postgres"
+  password: "postgres"
+  ssl_mode: "disable"
+
+logging:
+  level: "info"
+  format: "json"
