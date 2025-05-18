@@ -55,7 +55,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RequestID)
 
-	r.Route("/api/v1/products", func(r chi.Router) {
+	r.Route("/api/products", func(r chi.Router) {
 		r.Post("/", productHandler.CreateProduct)
 		r.Get("/", productHandler.ListProducts)
 		r.Get("/{id}", productHandler.GetProduct)

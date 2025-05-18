@@ -69,7 +69,3 @@ docker-compose up -d
 ```bash
 go test ./...
 ```
-
-## Лицензия
-
-MIT 
