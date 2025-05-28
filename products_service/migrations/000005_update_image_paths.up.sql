@@ -1,0 +1,1 @@
+UPDATE products SET image = REPLACE(image, '/images/', '/static/images/') WHERE image LIKE '/images/%'; 

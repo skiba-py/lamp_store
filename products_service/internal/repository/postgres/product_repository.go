@@ -19,8 +19,8 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 
 func (r *ProductRepository) Create(ctx context.Context, product *domain.Product) error {
 	query := `
-		INSERT INTO products (id, name, description, price, stock, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO products (id, name, description, price, stock, image, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
 	now := time.Now()
@@ -33,6 +33,7 @@ func (r *ProductRepository) Create(ctx context.Context, product *domain.Product)
 		product.Description,
 		product.Price,
 		product.Stock,
+		product.Image,
 		product.CreatedAt,
 		product.UpdatedAt,
 	)
@@ -42,7 +43,7 @@ func (r *ProductRepository) Create(ctx context.Context, product *domain.Product)
 
 func (r *ProductRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Product, error) {
 	query := `
-		SELECT id, name, description, price, stock, created_at, updated_at
+		SELECT id, name, description, price, stock, image, created_at, updated_at
 		FROM products
 		WHERE id = $1
 	`
@@ -54,6 +55,7 @@ func (r *ProductRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 		&product.Description,
 		&product.Price,
 		&product.Stock,
+		&product.Image,
 		&product.CreatedAt,
 		&product.UpdatedAt,
 	)
@@ -68,8 +70,8 @@ func (r *ProductRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 func (r *ProductRepository) Update(ctx context.Context, product *domain.Product) error {
 	query := `
 		UPDATE products
-		SET name = $1, description = $2, price = $3, stock = $4, updated_at = $5
-		WHERE id = $6
+		SET name = $1, description = $2, price = $3, stock = $4, image = $5, updated_at = $6
+		WHERE id = $7
 	`
 
 	product.UpdatedAt = time.Now()
@@ -79,6 +81,7 @@ func (r *ProductRepository) Update(ctx context.Context, product *domain.Product)
 		product.Description,
 		product.Price,
 		product.Stock,
+		product.Image,
 		product.UpdatedAt,
 		product.ID,
 	)
@@ -121,7 +124,7 @@ func (r *ProductRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *ProductRepository) List(ctx context.Context, offset, limit int) ([]*domain.Product, error) {
 	query := `
-		SELECT id, name, description, price, stock, created_at, updated_at
+		SELECT id, name, description, price, stock, image, created_at, updated_at
 		FROM products
 		ORDER BY created_at DESC
 		LIMIT $1 OFFSET $2
@@ -142,6 +145,7 @@ func (r *ProductRepository) List(ctx context.Context, offset, limit int) ([]*dom
 			&product.Description,
 			&product.Price,
 			&product.Stock,
+			&product.Image,
 			&product.CreatedAt,
 			&product.UpdatedAt,
 		)

@@ -231,3 +231,58 @@ func (r *OrderRepository) Delete(id uuid.UUID) error {
 	_, err := r.db.Exec(query, id)
 	return err
 }
+
+// GetPendingByUserID возвращает заказ пользователя со статусом 'pending', если он есть
+func (r *OrderRepository) GetPendingByUserID(userID uuid.UUID) (*domain.Order, error) {
+	query := `
+		SELECT id, user_id, status, total, created_at, updated_at
+		FROM orders
+		WHERE user_id = $1 AND status = 'pending'
+		LIMIT 1
+	`
+	order := &domain.Order{}
+	err := r.db.QueryRow(query, userID).Scan(
+		&order.ID,
+		&order.UserID,
+		&order.Status,
+		&order.Total,
+		&order.CreatedAt,
+		&order.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	itemsQuery := `
+		SELECT id, order_id, product_id, quantity, price, created_at, updated_at
+		FROM order_items
+		WHERE order_id = $1
+	`
+	itemRows, err := r.db.Query(itemsQuery, order.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer itemRows.Close()
+
+	for itemRows.Next() {
+		item := domain.OrderItem{}
+		err := itemRows.Scan(
+			&item.ID,
+			&item.OrderID,
+			&item.ProductID,
+			&item.Quantity,
+			&item.Price,
+			&item.CreatedAt,
+			&item.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		order.Items = append(order.Items, item)
+	}
+
+	return order, nil
+}

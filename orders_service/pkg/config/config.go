@@ -23,7 +23,7 @@ type DatabaseConfig struct {
 	Database string `mapstructure:"database"`
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
-	SSLMode  string `mapstructure:"sslmode"`
+	SSLMode  string `mapstructure:"ssl_mode"`
 }
 
 type LoggingConfig struct {
@@ -54,4 +54,9 @@ func (c *DatabaseConfig) GetDSN() string {
 
 func (c *ServerConfig) GetServerAddr() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
+func (c *DatabaseConfig) GetURLDSN() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		c.User, c.Password, c.Host, c.Port, c.Database, c.SSLMode)
 }

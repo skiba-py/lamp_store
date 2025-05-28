@@ -15,5 +15,13 @@ WORKDIR /app
 
 COPY --from=builder /app/orders_service .
 COPY --from=builder /app/config.yaml .
+COPY --from=builder /app/migrations ./migrations
+COPY ./migrations /app/migrations
+
+RUN adduser -D -g '' appuser && \
+    mkdir -p /app/migrations && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 CMD ["./orders_service"] 

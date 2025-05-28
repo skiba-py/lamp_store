@@ -2,19 +2,21 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/skiba/lamp_store/orders_service/internal/domain"
+	"github.com/skiba/lamp_store/orders_service/internal/service"
 )
 
 type OrderHandler struct {
-	service domain.OrderService
+	orderService *service.OrderService
 }
 
-func NewOrderHandler(service domain.OrderService) *OrderHandler {
-	return &OrderHandler{service: service}
+func NewOrderHandler(orderService *service.OrderService) *OrderHandler {
+	return &OrderHandler{orderService: orderService}
 }
 
 func (h *OrderHandler) Register(r chi.Router) {
@@ -34,7 +36,8 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.CreateOrder(&order); err != nil {
+	if err := h.orderService.CreateOrder(&order); err != nil {
+		log.Printf("CreateOrder error: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +53,7 @@ func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	order, err := h.service.GetOrder(id)
+	order, err := h.orderService.GetOrder(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,13 +74,19 @@ func (h *OrderHandler) GetUserOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orders, err := h.service.GetUserOrders(userID)
+	cart, err := h.orderService.GetUserCartWithProducts(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(orders)
+	if cart == nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(nil)
+		return
+	}
+
+	json.NewEncoder(w).Encode(cart)
 }
 
 func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +103,7 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	order.ID = id
-	if err := h.service.UpdateOrder(&order); err != nil {
+	if err := h.orderService.UpdateOrder(&order); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -109,7 +118,7 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.DeleteOrder(id); err != nil {
+	if err := h.orderService.DeleteOrder(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

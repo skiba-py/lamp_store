@@ -1,16 +1,23 @@
+version: '3.8'
 services:
   orders_service:
     build: .
     ports:
       - "8001:8001"
-    environment:
-      - PORT=8001
     depends_on:
-      - postgres
+      - orders_postgres
+    environment:
+      - DB_HOST=orders_postgres
+      - DB_PORT=5432
+      - DB_NAME=lamp_store
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
     volumes:
-      - ./migrations:/docker-entrypoint-initdb.d
+      - ./migrations:/app/migrations
+    networks:
+      - lamp-store-network
 
-  postgres:
+  orders_postgres:
     image: postgres:17-alpine
     environment:
       - POSTGRES_USER=postgres
@@ -20,7 +27,12 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - lamp-store-network
+
+networks:
+  lamp-store-network:
+    driver: bridge
 
 volumes:
   postgres_data: 

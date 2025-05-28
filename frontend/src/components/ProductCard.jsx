@@ -21,7 +21,7 @@ export default function ProductCard({ product, onAddToCart }) {
           <Image
             src={product.image}
             alt={product.name}
-            objectFit="cover"
+            objectFit="contain"
             w="100%"
             h="100%"
           />

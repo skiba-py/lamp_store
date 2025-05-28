@@ -7,13 +7,14 @@ import (
 )
 
 type Order struct {
-	ID        uuid.UUID   `json:"id"`
-	UserID    uuid.UUID   `json:"user_id"`
-	Status    string      `json:"status"`
-	Total     float64     `json:"total"`
-	Items     []OrderItem `json:"items"`
-	CreatedAt time.Time   `json:"created_at"`
-	UpdatedAt time.Time   `json:"updated_at"`
+	ID            uuid.UUID   `json:"id"`
+	UserID        uuid.UUID   `json:"user_id"`
+	Status        string      `json:"status"`
+	Total         float64     `json:"total"`
+	Items         []OrderItem `json:"items"`
+	ReservationID string      `json:"reservation_id"`
+	CreatedAt     time.Time   `json:"created_at"`
+	UpdatedAt     time.Time   `json:"updated_at"`
 }
 
 type OrderItem struct {
@@ -32,6 +33,7 @@ type OrderRepository interface {
 	GetByUserID(userID uuid.UUID) ([]*Order, error)
 	Update(order *Order) error
 	Delete(id uuid.UUID) error
+	GetPendingByUserID(userID uuid.UUID) (*Order, error)
 }
 
 type OrderService interface {

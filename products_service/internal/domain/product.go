@@ -2,14 +2,9 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
-)
-
-var (
-	ErrProductNotFound = errors.New("product not found")
 )
 
 // Product представляет собой модель товара
@@ -19,6 +14,7 @@ type Product struct {
 	Description string    `json:"description"`
 	Price       float64   `json:"price"`
 	Stock       int       `json:"stock"`
+	Image       string    `json:"image"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

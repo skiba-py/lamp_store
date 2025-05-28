@@ -1,0 +1,3 @@
+UPDATE products SET image = '' WHERE image IS NULL;
+ALTER TABLE products ALTER COLUMN image SET DEFAULT '';
+ALTER TABLE products ALTER COLUMN image SET NOT NULL; 

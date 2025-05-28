@@ -2,31 +2,38 @@ version: '3.8'
 
 services:
   products_service:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "8000:8000"
-    environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=lamp_store
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
     depends_on:
-      - postgres
+      - products_postgres
+    environment:
+      - DB_HOST=products_postgres
+      - DB_PORT=5432
+      - DB_NAME=lamp_store
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    volumes:
+      - ./migrations:/app/migrations
+    networks:
+      - lamp-store-network
 
-  postgres:
+  products_postgres:
     image: postgres:17-alpine
     environment:
-      - POSTGRES_DB=lamp_store
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lamp_store
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - lamp-store-network
+
+networks:
+  lamp-store-network:
+    driver: bridge
 
 volumes:
   postgres_data: 

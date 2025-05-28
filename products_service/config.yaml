@@ -1,15 +1,15 @@
 server:
   port: 8000
-  host: "0.0.0.0"
+  host: 0.0.0.0
 
 database:
-  host: "postgres"
+  host: products_postgres
   port: 5432
-  database: "lamp_store"
-  user: "postgres"
-  password: "postgres"
-  ssl_mode: "disable"
+  database: lamp_store
+  user: postgres
+  password: postgres
+  ssl_mode: disable
 
 logging:
-  level: "info"
-  format: "json"
+  level: info
+  format: json

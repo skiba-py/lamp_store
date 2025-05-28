@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            .news-container {
+                display: none;
+            }
+        </style>
+        <script>
+            const url = 'http://localhost:8000/';
+
+            async function makeRequest() {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    let container = document.querySelector('.news-container');
+                    for(let i in data) {
+                        let item = document.createElement("li");
+                        item.setAttribute('data-id', data[i]['id'])
+                        item.innerHTML = data[i]['title']
+                        container.appendChild(item)
+                    }
+                    container.style.display = 'block'
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('button').addEventListener('click', () => {
+                    makeRequest();
+                })
+            })
+        </script>
+    </head>
+    <body>
+        <ul class="news-container"></ul>
+        <button>Подгрузить новости</button>
+    </body>
+</html>

@@ -4,11 +4,16 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/skiba/lamp_store/products_service/internal/handler"
+	corsmiddleware "github.com/skiba/lamp_store/products_service/internal/middleware"
 	"github.com/skiba/lamp_store/products_service/internal/repository/postgres"
 	"github.com/skiba/lamp_store/products_service/internal/service"
 	"github.com/skiba/lamp_store/products_service/pkg/config"
@@ -42,11 +47,39 @@ func main() {
 		logger.Fatal("Failed to ping database", zap.Error(err))
 	}
 
+	// Автоматически применяем миграции
+	m, err := migrate.New(
+		"file:///app/migrations",
+		cfg.Database.GetURLDSN(),
+	)
+	if err != nil {
+		logger.Error("Failed to init migrate", zap.Error(err))
+	} else {
+		err = m.Up()
+		if err != nil {
+			if err.Error() == "no change" {
+				// Ничего не делаем, это нормально
+			} else if err.Error() == "Dirty database version 2. Fix and force version." {
+				// Исправляем "грязное" состояние
+				if err := m.Force(2); err != nil {
+					logger.Error("Failed to force version", zap.Error(err))
+				}
+			} else {
+				logger.Error("Failed to apply migrations", zap.Error(err))
+			}
+		}
+	}
+
 	repo := postgres.NewProductRepository(db)
 
 	svc := service.NewProductService(repo)
 
 	productHandler := handler.NewProductHandler(svc)
+
+	// Создаём сервис и хендлер для резервирования
+	reservationRepo := postgres.NewReservationRepository(db)
+	reservationService := service.NewReservationService(reservationRepo, repo)
+	reservationHandler := handler.NewReservationHandler(reservationService)
 
 	r := chi.NewRouter()
 
@@ -54,6 +87,21 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RequestID)
+	r.Use(corsmiddleware.Cors)
+
+	// Отдача статических файлов (картинок)
+	imgDir := "/app/images"
+	if _, err := os.Stat(imgDir); os.IsNotExist(err) {
+		_ = os.MkdirAll(imgDir, 0755)
+	}
+	fs := http.FileServer(http.Dir(imgDir))
+
+	// Добавляем CORS для статических файлов
+	corsFs := corsmiddleware.Cors(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fs.ServeHTTP(w, r)
+	}))
+
+	r.Handle("/static/images/*", http.StripPrefix("/static/images/", corsFs))
 
 	r.Route("/api/products", func(r chi.Router) {
 		r.Post("/", productHandler.CreateProduct)
@@ -61,7 +109,11 @@ func main() {
 		r.Get("/{id}", productHandler.GetProduct)
 		r.Put("/{id}", productHandler.UpdateProduct)
 		r.Delete("/{id}", productHandler.DeleteProduct)
+		r.Post("/{id}/availability", productHandler.CheckAvailability)
 	})
+
+	// Регистрируем роуты для резервирования
+	reservationHandler.Register(r)
 
 	addr := cfg.Server.GetServerAddr()
 	logger.Info("Starting server", zap.String("address", addr))

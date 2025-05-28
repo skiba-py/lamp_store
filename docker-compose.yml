@@ -9,13 +9,75 @@ services:
     networks:
       - lamp-store-network
 
-  # Backend services will be added later
+  products_service:
+    build:
+      context: ./products_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - products_postgres
+    environment:
+      - DB_HOST=products_postgres
+      - DB_PORT=5432
+      - DB_NAME=lamp_store
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    networks:
+      - lamp-store-network
 
-  # Database services will be added later
+  products_postgres:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lamp_store
+    ports:
+      - "5432:5432"
+    volumes:
+      - products_postgres_data:/var/lib/postgresql/data
+      - ./products_service/migrations:/docker-entrypoint-initdb.d
+      - ./products_service/migrations:/app/migrations
+    networks:
+      - lamp-store-network
+
+  orders_service:
+    build:
+      context: ./orders_service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    depends_on:
+      - orders_postgres
+      - products_service
+    environment:
+      - DB_HOST=orders_postgres
+      - DB_PORT=5432
+      - DB_NAME=lamp_store
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    networks:
+      - lamp-store-network
+
+  orders_postgres:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lamp_store
+    ports:
+      - "5433:5432"
+    volumes:
+      - orders_postgres_data:/var/lib/postgresql/data
+      - ./orders_service/migrations:/docker-entrypoint-initdb.d
+      - ./orders_service/migrations:/app/migrations
+    networks:
+      - lamp-store-network
 
 networks:
   lamp-store-network:
     driver: bridge
 
-# volumes:
-#   postgres_data:
+volumes:
+  products_postgres_data:
+  orders_postgres_data:

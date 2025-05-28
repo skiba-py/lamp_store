@@ -3,12 +3,12 @@ server:
   host: 0.0.0.0
 
 database:
-  host: postgres
-  port: 5433
+  host: orders_postgres
+  port: 5432
   database: lamp_store
   user: postgres
   password: postgres
-  sslmode: disable
+  ssl_mode: disable
 
 logging:
   level: info
