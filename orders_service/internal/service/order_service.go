@@ -40,6 +40,13 @@ func (s *OrderService) CreateOrder(order *domain.Order) error {
 			if exist, ok := itemMap[pid]; ok {
 				exist.Quantity += newItem.Quantity
 			} else {
+				// Генерируем новый UUID для новых товаров, если id пустой или совпадает
+				if newItem.ID == uuid.Nil {
+					newItem.ID = uuid.New()
+				}
+				newItem.OrderID = pendingOrder.ID
+				newItem.CreatedAt = time.Now()
+				newItem.UpdatedAt = time.Now()
 				pendingOrder.Items = append(pendingOrder.Items, newItem)
 			}
 		}

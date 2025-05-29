@@ -40,6 +40,17 @@ export const ordersApi = {
       body: JSON.stringify(orderData),
     });
     return handleResponse(response);
+  },
+
+  deleteOrder: async (orderId) => {
+    const response = await fetch(`${ORDERS_API_URL}/orders/${orderId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error);
+    }
+    return true;
   }
 };
 

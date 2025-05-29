@@ -73,16 +73,22 @@ export default function Cart() {
           setUpdating(true);
           try {
             const updatedItems = order.items.filter(item => item.id !== id);
-            const itemsForBackend = updatedItems.map(item => ({
-              id: item.id,
-              order_id: item.order_id,
-              product_id: item.product.id,
-              quantity: item.quantity,
-              price: item.product.price
-            }));
-            const updatedOrder = { ...order, items: itemsForBackend };
-            await ordersApi.updateOrder(order.id, updatedOrder);
-            setOrder({ ...order, items: updatedItems });
+            if (updatedItems.length === 0) {
+              await ordersApi.deleteOrder(order.id);
+              setOrder(null);
+              toast({ title: 'Корзина очищена', description: 'Все товары удалены', status: 'info' });
+            } else {
+              const itemsForBackend = updatedItems.map(item => ({
+                id: item.id,
+                order_id: item.order_id,
+                product_id: item.product.id,
+                quantity: item.quantity,
+                price: item.product.price
+              }));
+              const updatedOrder = { ...order, items: itemsForBackend };
+              await ordersApi.updateOrder(order.id, updatedOrder);
+              setOrder({ ...order, items: updatedItems });
+            }
           } catch (err) {
             toast({ title: 'Ошибка', description: 'Не удалось удалить товар из корзины', status: 'error' });
           } finally {
