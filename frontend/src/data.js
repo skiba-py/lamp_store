@@ -41,7 +41,6 @@ export const products = [
     image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
     description: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
   },
-  // Добавь больше товаров по желанию
 ];
 
 export const cart = [

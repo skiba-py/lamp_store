@@ -78,29 +78,6 @@ export const productsApi = {
   }
 };
 
-// Методы для работы с резервированиями
-export const reserveProducts = async (items) => {
-  try {
-    const response = await fetch(`${PRODUCTS_API_URL}/products/reserve`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ items }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Ошибка при резервировании товаров:', error);
-    throw error;
-  }
-};
-
 export const confirmReservation = async (reservationId) => {
   try {
     const response = await fetch(`${PRODUCTS_API_URL}/products/reserve/${reservationId}/confirm`, {

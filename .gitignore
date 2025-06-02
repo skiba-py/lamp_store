@@ -1,0 +1,39 @@
+# IDE
+.idea/
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Node/React
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+
+# Docker
+*.pid
+
+# Misc
+*.swp
+*~
+
+# Images volume (если вдруг локально)
+/usr/share/nginx/html/images/ 
