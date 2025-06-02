@@ -90,9 +90,11 @@ func main() {
 	r.Use(corsmiddleware.Cors)
 
 	// Отдача статических файлов (картинок)
-	imgDir := "/app/images"
+	imgDir := "/usr/share/nginx/html/images"
 	if _, err := os.Stat(imgDir); os.IsNotExist(err) {
-		_ = os.MkdirAll(imgDir, 0755)
+		if err := os.MkdirAll(imgDir, 0755); err != nil {
+			logger.Error("Failed to create images directory", zap.Error(err))
+		}
 	}
 	fs := http.FileServer(http.Dir(imgDir))
 
@@ -101,7 +103,7 @@ func main() {
 		fs.ServeHTTP(w, r)
 	}))
 
-	r.Handle("/static/images/*", http.StripPrefix("/static/images/", corsFs))
+	r.Handle("/images/*", http.StripPrefix("/images/", corsFs))
 
 	r.Route("/api/products", func(r chi.Router) {
 		r.Post("/", productHandler.CreateProduct)
@@ -110,6 +112,7 @@ func main() {
 		r.Put("/{id}", productHandler.UpdateProduct)
 		r.Delete("/{id}", productHandler.DeleteProduct)
 		r.Post("/{id}/availability", productHandler.CheckAvailability)
+		r.Post("/{id}/image", productHandler.UploadImage)
 	})
 
 	// Регистрируем роуты для резервирования

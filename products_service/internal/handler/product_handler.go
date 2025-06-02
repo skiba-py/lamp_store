@@ -168,6 +168,13 @@ func (h *ProductHandler) Register(r chi.Router) {
 }
 
 func (h *ProductHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
+	// Ограничиваем размер файла до 5MB
+	if err := r.ParseMultipartForm(5 << 20); err != nil {
+		log.Printf("Ошибка при разборе multipart form: %v", err)
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		return
+	}
+
 	idStr := chi.URLParam(r, "id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -177,59 +184,6 @@ func (h *ProductHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		http.Error(w, "Не удалось получить файл", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	// Создаём директорию для картинок, если не существует
-	imgDir := "./images"
-	if err := os.MkdirAll(imgDir, 0755); err != nil {
-		http.Error(w, "Не удалось создать директорию для картинок", http.StatusInternalServerError)
-		return
-	}
-
-	filename := id.String() + filepath.Ext(header.Filename)
-	imgPath := filepath.Join(imgDir, filename)
-	out, err := os.Create(imgPath)
-	if err != nil {
-		http.Error(w, "Не удалось сохранить файл", http.StatusInternalServerError)
-		return
-	}
-	defer out.Close()
-
-	if _, err := io.Copy(out, file); err != nil {
-		http.Error(w, "Ошибка при сохранении файла", http.StatusInternalServerError)
-		return
-	}
-
-	// Сохраняем путь к картинке в БД
-	product, err := h.service.GetProduct(r.Context(), id)
-	if err != nil {
-		http.Error(w, "Товар не найден", http.StatusNotFound)
-		return
-	}
-	product.Image = "/images/" + filename
-	if err := h.service.UpdateProduct(r.Context(), product); err != nil {
-		http.Error(w, "Не удалось обновить товар", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"image": product.Image})
-}
-
-// UploadProductImage обрабатывает загрузку картинки для товара
-func (h *ProductHandler) UploadProductImage(w http.ResponseWriter, r *http.Request) {
-	// Ограничиваем размер файла до 5MB
-	if err := r.ParseMultipartForm(5 << 20); err != nil {
-		log.Printf("Ошибка при разборе multipart form: %v", err)
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
-		return
-	}
-
-	file, handler, err := r.FormFile("image")
-	if err != nil {
 		log.Printf("Ошибка при получении файла: %v", err)
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
@@ -237,7 +191,7 @@ func (h *ProductHandler) UploadProductImage(w http.ResponseWriter, r *http.Reque
 	defer file.Close()
 
 	// Создаем директорию, если её нет
-	uploadDir := "/app/static/images"
+	uploadDir := "/usr/share/nginx/html/images"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		log.Printf("Ошибка при создании директории: %v", err)
 		http.Error(w, "Error creating upload directory", http.StatusInternalServerError)
@@ -245,7 +199,8 @@ func (h *ProductHandler) UploadProductImage(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Создаем файл в директории
-	dst, err := os.Create(filepath.Join(uploadDir, handler.Filename))
+	filename := id.String() + filepath.Ext(header.Filename)
+	dst, err := os.Create(filepath.Join(uploadDir, filename))
 	if err != nil {
 		log.Printf("Ошибка при создании файла: %v", err)
 		http.Error(w, "Error creating file", http.StatusInternalServerError)
@@ -260,10 +215,22 @@ func (h *ProductHandler) UploadProductImage(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Обновляем путь к картинке в БД
+	product, err := h.service.GetProduct(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	product.Image = "/images/" + filename
+	if err := h.service.UpdateProduct(r.Context(), product); err != nil {
+		http.Error(w, "Failed to update product", http.StatusInternalServerError)
+		return
+	}
+
 	// Возвращаем успешный ответ
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "File uploaded successfully",
-		"path":    filepath.Join("/static/images", handler.Filename),
+		"image": product.Image,
 	})
 }

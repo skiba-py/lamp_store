@@ -1,5 +1,6 @@
 const ORDERS_API_URL = 'http://localhost:8001/api';
-const PRODUCTS_API_URL = 'http://localhost:8000/api';
+export const PRODUCTS_API_URL = 'http://localhost:8000/api';
+const ADMIN_API_URL = 'http://localhost:8003/api/admin';
 
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -130,4 +131,85 @@ export const cancelReservation = async (reservationId) => {
     console.error('Ошибка при отмене резервирования:', error);
     throw error;
   }
+};
+
+export const adminApi = {
+  login: async (credentials) => {
+    const response = await fetch(`${ADMIN_API_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    return handleResponse(response);
+  },
+
+  getProducts: async (token) => {
+    const response = await fetch(`${ADMIN_API_URL}/products`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  createProduct: async (product, token) => {
+    const response = await fetch(`${ADMIN_API_URL}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(product),
+    });
+    return handleResponse(response);
+  },
+
+  updateProduct: async (id, product, token) => {
+    const response = await fetch(`${ADMIN_API_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(product),
+    });
+    return handleResponse(response);
+  },
+
+  deleteProduct: async (id, token) => {
+    const response = await fetch(`${ADMIN_API_URL}/products/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error);
+    }
+    return true;
+  },
+
+  getOrders: async (token) => {
+    const response = await fetch(`${ADMIN_API_URL}/orders`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  updateOrder: async (id, order, token) => {
+    const response = await fetch(`${ADMIN_API_URL}/orders/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(order),
+    });
+    return handleResponse(response);
+  },
 }; 

@@ -117,11 +117,12 @@ func (s *OrderService) GetOrder(id uuid.UUID) (*domain.Order, error) {
 
 // EnrichedOrderItem содержит информацию о товаре для фронта
 type EnrichedOrderItem struct {
-	ID       string       `json:"id"`
-	OrderID  string       `json:"order_id"`
-	Product  *ProductInfo `json:"product"`
-	Quantity int          `json:"quantity"`
-	Price    float64      `json:"price"`
+	ID        string       `json:"id"`
+	OrderID   string       `json:"order_id"`
+	ProductID string       `json:"product_id"`
+	Product   *ProductInfo `json:"product"`
+	Quantity  int          `json:"quantity"`
+	Price     float64      `json:"price"`
 }
 
 // EnrichedOrder содержит заказ с обогащёнными товарами
@@ -162,11 +163,12 @@ func (s *OrderService) GetUserOrdersWithProducts(userID uuid.UUID) ([]*EnrichedO
 				prod = &ProductInfo{ID: item.ProductID.String(), Name: "Товар не найден"}
 			}
 			enrichedOrder.Items = append(enrichedOrder.Items, EnrichedOrderItem{
-				ID:       item.ID.String(),
-				OrderID:  item.OrderID.String(),
-				Product:  prod,
-				Quantity: item.Quantity,
-				Price:    item.Price,
+				ID:        item.ID.String(),
+				OrderID:   item.OrderID.String(),
+				ProductID: item.ProductID.String(),
+				Product:   prod,
+				Quantity:  item.Quantity,
+				Price:     item.Price,
 			})
 		}
 		enrichedOrders = append(enrichedOrders, enrichedOrder)
@@ -209,12 +211,50 @@ func (s *OrderService) GetUserCartWithProducts(userID uuid.UUID) (*EnrichedOrder
 			prod = &ProductInfo{ID: item.ProductID.String(), Name: "Товар не найден"}
 		}
 		enrichedOrder.Items = append(enrichedOrder.Items, EnrichedOrderItem{
-			ID:       item.ID.String(),
-			OrderID:  item.OrderID.String(),
-			Product:  prod,
-			Quantity: item.Quantity,
-			Price:    item.Price,
+			ID:        item.ID.String(),
+			OrderID:   item.OrderID.String(),
+			ProductID: item.ProductID.String(),
+			Product:   prod,
+			Quantity:  item.Quantity,
+			Price:     item.Price,
 		})
 	}
 	return enrichedOrder, nil
+}
+
+func (s *OrderService) GetAllOrders() ([]*EnrichedOrder, error) {
+	orders, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var enrichedOrders []*EnrichedOrder
+	for _, order := range orders {
+		enrichedOrder := &EnrichedOrder{
+			ID:            order.ID.String(),
+			UserID:        order.UserID.String(),
+			Status:        order.Status,
+			Total:         order.Total,
+			ReservationID: order.ReservationID,
+			CreatedAt:     order.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			UpdatedAt:     order.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+		for _, item := range order.Items {
+			prod, err := s.productsClient.GetProductByID(item.ProductID.String())
+			if err != nil {
+				log.Printf("[OrderService] Не удалось получить товар %s: %v", item.ProductID.String(), err)
+				prod = &ProductInfo{ID: item.ProductID.String(), Name: "Товар не найден"}
+			}
+			enrichedOrder.Items = append(enrichedOrder.Items, EnrichedOrderItem{
+				ID:        item.ID.String(),
+				OrderID:   item.OrderID.String(),
+				ProductID: item.ProductID.String(),
+				Product:   prod,
+				Quantity:  item.Quantity,
+				Price:     item.Price,
+			})
+		}
+		enrichedOrders = append(enrichedOrders, enrichedOrder)
+	}
+	return enrichedOrders, nil
 }

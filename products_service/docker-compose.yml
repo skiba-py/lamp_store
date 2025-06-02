@@ -15,6 +15,7 @@ services:
       - DB_PASSWORD=postgres
     volumes:
       - ./migrations:/app/migrations
+      - frontend_images:/usr/share/nginx/html/images
     networks:
       - lamp-store-network
 
@@ -31,9 +32,19 @@ services:
     networks:
       - lamp-store-network
 
+  frontend:
+    build: ../frontend
+    ports:
+      - "80:80"
+    volumes:
+      - frontend_images:/usr/share/nginx/html/images
+    networks:
+      - lamp-store-network
+
 networks:
   lamp-store-network:
     driver: bridge
 
 volumes:
-  postgres_data: 
+  postgres_data:
+  frontend_images: 

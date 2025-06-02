@@ -6,24 +6,18 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -o products_service ./cmd/api
+RUN go build -o main ./cmd/api
 
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/products_service .
-COPY --from=builder /app/config.yaml .
+RUN mkdir -p frontend/public/images && chmod 755 frontend/public/images
+
+COPY --from=builder /app/main .
 COPY --from=builder /app/migrations ./migrations
-COPY ./migrations /app/migrations
-COPY . /app/
-RUN mkdir -p /app/images
+COPY --from=builder /app/config.yaml .
 
-RUN adduser -D -g '' appuser && \
-    mkdir -p /app/migrations && \
-    chown -R appuser:appuser /app
+EXPOSE 8000
 
-USER appuser
-
-CMD ["./products_service"] 
+CMD ["./main"] 

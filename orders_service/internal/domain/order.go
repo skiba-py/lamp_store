@@ -31,6 +31,7 @@ type OrderRepository interface {
 	Create(order *Order) error
 	GetByID(id uuid.UUID) (*Order, error)
 	GetByUserID(userID uuid.UUID) ([]*Order, error)
+	GetAll() ([]*Order, error)
 	Update(order *Order) error
 	Delete(id uuid.UUID) error
 	GetPendingByUserID(userID uuid.UUID) (*Order, error)

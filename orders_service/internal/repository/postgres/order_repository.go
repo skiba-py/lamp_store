@@ -286,3 +286,64 @@ func (r *OrderRepository) GetPendingByUserID(userID uuid.UUID) (*domain.Order, e
 
 	return order, nil
 }
+
+func (r *OrderRepository) GetAll() ([]*domain.Order, error) {
+	query := `
+		SELECT id, user_id, status, total, created_at, updated_at
+		FROM orders
+		ORDER BY created_at DESC
+	`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []*domain.Order
+	for rows.Next() {
+		order := &domain.Order{}
+		err := rows.Scan(
+			&order.ID,
+			&order.UserID,
+			&order.Status,
+			&order.Total,
+			&order.CreatedAt,
+			&order.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		itemsQuery := `
+			SELECT id, order_id, product_id, quantity, price, created_at, updated_at
+			FROM order_items
+			WHERE order_id = $1
+		`
+		itemRows, err := r.db.Query(itemsQuery, order.ID)
+		if err != nil {
+			return nil, err
+		}
+		defer itemRows.Close()
+
+		for itemRows.Next() {
+			item := domain.OrderItem{}
+			err := itemRows.Scan(
+				&item.ID,
+				&item.OrderID,
+				&item.ProductID,
+				&item.Quantity,
+				&item.Price,
+				&item.CreatedAt,
+				&item.UpdatedAt,
+			)
+			if err != nil {
+				return nil, err
+			}
+			order.Items = append(order.Items, item)
+		}
+
+		orders = append(orders, order)
+	}
+
+	return orders, nil
+}
